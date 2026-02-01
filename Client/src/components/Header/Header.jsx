@@ -166,18 +166,18 @@ const Header = () => {
             ) : (
               <>
                 <button
-                  onClick={() => setPage("login")}
+                  onClick={() => setPage("register")}
                   className="nav-icon-btn"
-                  title="User Login"
-                  aria-label="User Login"
+                  title="Register"
+                  aria-label="Register"
                 >
-                  <LogIn size={20} color="#c084fc" />
+                  <User size={20} color="#c084fc" />
                 </button>
                 <button
-                  onClick={() => setPage("lawyer-login")}
+                  onClick={() => setPage("login")}
                   className="nav-icon-btn"
-                  title="Lawyer Login"
-                  aria-label="Lawyer Login"
+                  title="Login"
+                  aria-label="Login"
                 >
                   <LogIn size={20} color="#a855f7" />
                 </button>
@@ -247,23 +247,23 @@ const Header = () => {
                 <>
                   <button
                     onClick={() => {
+                      setPage("register");
+                      setMobileMenuOpen(false);
+                    }}
+                    className="mobile-lang-toggle"
+                  >
+                    <User size={20} />
+                    Register
+                  </button>
+                  <button
+                    onClick={() => {
                       setPage("login");
                       setMobileMenuOpen(false);
                     }}
                     className="mobile-lang-toggle"
                   >
                     <LogIn size={20} />
-                    User Login
-                  </button>
-                  <button
-                    onClick={() => {
-                      setPage("lawyer-login");
-                      setMobileMenuOpen(false);
-                    }}
-                    className="mobile-lang-toggle"
-                  >
-                    <LogIn size={20} />
-                    Lawyer Login
+                    Login
                   </button>
                 </>
               )}

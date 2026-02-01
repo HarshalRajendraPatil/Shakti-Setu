@@ -5,8 +5,6 @@ import Register from './Register/Register';
 import Login from './Login/Login';
 import Dashboard from './Dashboard/Dashboard';
 import Assistant from './Assistant/Assistant';
-import LawyerRegister from './Lawyer/LawyerRegister';
-import LawyerLogin from './Lawyer/LawyerLogin';
 import LawyerListing from './Lawyer/LawyerListing';
 import LawyerProfile from './Lawyer/LawyerProfile';
 import UserProfile from './Profile/UserProfile';
@@ -29,9 +27,11 @@ const PageRouter = () => {
       return <ArticleView />;
     case 'chat':
       return <Chat />;
-    case 'register': 
+    case 'register':
+    case 'lawyer-register':
       return <Register />;
     case 'login':
+    case 'lawyer-login':
       return <Login />;
     case 'dashboard': 
       return <Dashboard />;
@@ -41,10 +41,6 @@ const PageRouter = () => {
       return <UserConsultations />;
     case 'assistant': 
       return <Assistant />;
-    case 'lawyer-register':
-      return <LawyerRegister />;
-    case 'lawyer-login':
-      return <LawyerLogin />;
     case 'lawyers':
       return <LawyerListing />;
     case 'lawyer-dashboard':
