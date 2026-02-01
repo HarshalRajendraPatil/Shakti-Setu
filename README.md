@@ -1,0 +1,584 @@
+# Shakti-Setu — Women's Legal Empowerment Platform
+
+A full-stack web application that connects women in India with legal information, helplines, lawyers, and an AI legal assistant. The platform supports user registration, lawyer onboarding (with admin approval), consultation requests, in-app chat, a legal knowledge base (“Know Your Rights”), dashboard insights powered by AI, reporting, and admin moderation.
+
+---
+
+## Table of Contents
+
+- [Tech Stack](#tech-stack)
+- [Prerequisites](#prerequisites)
+- [Environment Variables](#environment-variables)
+- [Installation & Running](#installation--running)
+- [Features (Detailed)](#features-detailed)
+- [API Reference](#api-reference)
+- [Data Models](#data-models)
+- [Project Structure](#project-structure)
+- [Admin & First-Time Setup](#admin--first-time-setup)
+- [Notes](#notes)
+
+---
+
+## Tech Stack
+
+| Layer   | Technology |
+|--------|------------|
+| **Client** | React 19, Vite 7, Redux Toolkit, Axios, Lucide React |
+| **Server** | Node.js, Express 5, Mongoose |
+| **Database** | MongoDB |
+| **Auth**    | JWT (separate tokens for users and lawyers) |
+| **AI**      | Google Gemini API (dashboard insights + legal assistant) |
+
+---
+
+## Prerequisites
+
+- **Node.js** (v16 or higher)
+- **MongoDB** (local or MongoDB Atlas)
+- **npm** or yarn
+- **Google Gemini API key** (for dashboard insights and legal assistant)
+
+---
+
+## Environment Variables
+
+### Server (`Server/.env`)
+
+| Variable        | Description |
+|----------------|-------------|
+| `MONGODB_URI`  | MongoDB connection string (e.g. `mongodb://localhost:27017/shakti-setu`) |
+| `JWT_SECRET`   | Secret for signing JWT tokens (use a strong value in production) |
+| `JWT_EXPIRE`   | Token expiry (e.g. `7d`) |
+| `PORT`         | Server port (default `5000`) |
+| `GEMINI_API_KEY` | Google Gemini API key for server-side dashboard insights |
+
+### Client (`Client/.env`)
+
+| Variable             | Description |
+|---------------------|-------------|
+| `VITE_API_URL`      | Backend base URL (e.g. `http://localhost:5000/api`) |
+| `VITE_GEMINI_API_KEY` | Gemini API key for client-side Legal Assistant (optional if only using server dashboard) |
+
+---
+
+## Installation & Running
+
+### 1. Server
+
+```bash
+cd Server
+npm install
+# Create Server/.env with MONGODB_URI, JWT_SECRET, JWT_EXPIRE, PORT, GEMINI_API_KEY
+npm run dev   # or: npm start
+```
+
+Server runs at **http://localhost:5000**.
+
+### 2. Client
+
+```bash
+cd Client
+npm install
+# Create Client/.env with VITE_API_URL and optionally VITE_GEMINI_API_KEY
+npm run dev
+```
+
+Client runs at **http://localhost:5173** (or next available port).
+
+---
+
+## Features (Detailed)
+
+### 1. Authentication
+
+- **User registration**  
+  - Fields: name, email, password, phone, age, state.  
+  - Passwords hashed with bcrypt.  
+  - JWT returned and stored in `localStorage` as `token`.  
+  - Role defaults to `user`; can be set to `admin` in DB.
+
+- **User login**  
+  - Email + password.  
+  - Suspended users cannot log in (403).  
+  - Returns JWT and user object (id, name, email, phone, age, state, role).
+
+- **Session persistence**  
+  - On load/refresh, if `token` exists and Redux user is missing, client calls `GET /auth/me` and restores user state and AppContext user.
+
+- **Lawyer registration**  
+  - Separate flow: name, email, password, phone, bar number, specialization(s), experience, state, city, address, bio, education, languages, consultation fee, availability.  
+  - Status set to `pending` until admin approves.  
+  - JWT stored as `lawyerToken`.
+
+- **Lawyer login**  
+  - Only lawyers with status `approved` and not suspended can log in.  
+  - Returns lawyer JWT and lawyer object.
+
+- **Protected routes**  
+  - User routes require `Authorization: Bearer <token>` (user token).  
+  - Lawyer routes require lawyer token.  
+  - Admin routes require user token with `role === 'admin'`.
+
+---
+
+### 2. Home & Navigation
+
+- **Hero (Home)**  
+  - Tagline, intro, “Get Started”, language toggle (English / Hindi).  
+  - Navigation: Home, Helplines & Resources, Know Your Rights, Find Lawyers, Legal Assistant; for logged-in users: Profile, My Consultations, Chat, Dashboard, Admin (if admin).
+
+- **Header**  
+  - Icon-based nav; dropdown for user/lawyer account (Profile, Logout).  
+  - Mobile: hamburger menu with same links.  
+  - Uses `AppContext` (page, setPage, language, translations).
+
+- **Language**  
+  - English and Hindi via `translations.js`; `t` from context used across components.
+
+---
+
+### 3. User Registration & Login
+
+- **Register**  
+  - Form: name, email, password, phone, age, state (Indian states dropdown).  
+  - On success: store user in Redux and AppContext, then redirect to Dashboard (Dashboard will fetch insights from server if not already present).
+
+- **Login**  
+  - Email + password; on success store token and user, redirect to Dashboard (or home).
+
+---
+
+### 4. User Dashboard
+
+- **Purpose**  
+  - Personalized “Top 10 challenges” and “Top 10 rights” for the user’s **state** and **age**, with “Read more” links, generated by **Gemini on the server**.
+
+- **Data source**  
+  - `GET /dashboard/insights` (auth required).  
+  - Server uses `req.user.age` and `req.user.state`, calls Gemini with a structured prompt, returns `{ problems, rights }`.  
+  - Each item: `{ en, hi, link }`.
+
+- **Behaviour**  
+  - On mount, if user has age/state and `dashboardData` is null, client calls `dashboardAPI.getInsights()` and stores result in context (`setDashboardData`).  
+  - Two cards: “Top 10 Challenges” and “Your Top 10 Rights” with “Learn more” links and optional TTS.  
+  - Footer CTA: “Talk to our Legal Team” → Assistant page.
+
+- **Requirement**  
+  - `GEMINI_API_KEY` must be set on the server.
+
+---
+
+### 5. Legal Assistant (AI Chat)
+
+- **Purpose**  
+  - Client-side Gemini chat for general legal queries (domestic violence, property rights, FIR, etc.) in English or Hindi.
+
+- **Behaviour**  
+  - Uses `fetchGroundedResponse(userQuery, user, language)` from `api.js` (Gemini with optional grounding).  
+  - User profile (name, age, state) is passed for context.  
+  - Optional text-to-speech and speech recognition hooks.
+
+---
+
+### 6. Helplines & Resources
+
+- **Purpose**  
+  - Curated list of emergency numbers and legal aid links for women in India (no database).
+
+- **Data**  
+  - `GET /api/resources` returns static JSON: emergency, national, legalAid, usefulLinks.  
+  - Each section has title (en/hi), items with name, nameHi, phone, description, url.
+
+- **UI**  
+  - Resources page shows sections with cards; phone numbers and external links (e.g. NCW, NALSA, WCD).
+
+---
+
+### 7. Know Your Rights (Legal Guide / Articles)
+
+- **Purpose**  
+  - Browsable legal knowledge base: short articles by category.  
+  - Only **preview** on the list; full article opens in a **new window**.  
+  - Read count, like/dislike counts; logged-in users can like or dislike (one reaction per user per article).
+
+- **List view (Legal Guide)**  
+  - Filter by category (Domestic Violence, Property Rights, Family Law, etc.).  
+  - Each card: title, category, **preview** (excerpt or first ~200 chars), read count, like/dislike counts, Like/Dislike buttons (if logged in), “Read more” button.  
+  - “Read more” opens `?articleId=<id>` in a new tab/window.
+
+- **Article view (new window)**  
+  - App reads `?articleId=` on load and sets `page = 'article'` and `openArticleId`.  
+  - ArticleView fetches full article, increments read count via `POST /articles/:id/read`, shows full content and Like/Dislike (with current `myReaction`).
+
+- **Article engagement**  
+  - **Read count**: incremented when the full article is opened (new window).  
+  - **Like / Dislike**: one per user per article; like and dislike are mutually exclusive (stored in `ArticleReaction`; counts updated on Article).  
+  - Endpoints: `POST /articles/:id/read` (no auth), `POST /articles/:id/like` and `POST /articles/:id/dislike` (user auth).
+
+- **Admin**  
+  - Admin panel → Articles tab: create, edit, delete articles (title, slug, category, excerpt, content, language).
+
+---
+
+### 8. Find Lawyers
+
+- **Lawyer listing**  
+  - Public `GET /lawyers/approved` with optional filters: state, specialization, search (name/specialization).  
+  - Cards show name, bar number, specialization, experience, location, average rating, total ratings.
+
+- **Lawyer detail**  
+  - `GET /consultations/lawyer/:lawyerId` returns lawyer profile and recent reviews (from completed consultations with rating).  
+  - Actions (for logged-in users only, and not for the lawyer’s own profile): “Request Consultation”, “Save lawyer”, “Report this lawyer”.
+
+- **Saved lawyers**  
+  - User can save/unsave lawyers; list stored in `User.savedLawyers`.  
+  - User profile has a “Saved Lawyers” section with “View” and “Remove”.
+
+---
+
+### 9. Consultations
+
+- **Request flow**  
+  - User selects a lawyer → “Request Consultation” → form: subject, description, preferred date/time, consultation type (phone, video, in-person, email).  
+  - `POST /consultations` creates request with status `pending`.  
+  - Rules: lawyer must be approved and not suspended; user cannot request if they already have a pending request with the same lawyer; user cannot request consultation with themselves (same email as lawyer).
+
+- **Lawyer side**  
+  - Lawyer sees list of consultations (filter by status).  
+  - Can **accept** or **reject** with optional response message.  
+  - Can mark an accepted consultation as **completed**.  
+  - When status is set to `completed`, all messages for that consultation are deleted (chat is disabled).
+
+- **User side (My Consultations)**  
+  - List of user’s consultations with status (pending, accepted, rejected, completed, cancelled).  
+  - User can cancel only if status is not completed/cancelled.  
+  - For **completed** consultations: user can **Rate & Review** (1–5 stars + optional text). One rating per consultation; lawyer’s `averageRating` and `totalRatings` are updated.  
+  - **Follow-up**: “Request follow-up” opens Find Lawyers with that lawyer and opens the request form with subject pre-filled as “Follow-up: &lt;previous subject&gt;”.  
+  - User can **Report this lawyer** from a consultation card.
+
+---
+
+### 10. Chat (User–Lawyer)
+
+- **Availability**  
+  - Chat is available only for consultations with status **accepted**.  
+  - Once the lawyer marks the consultation as **completed**, all messages are deleted and chat is no longer available.
+
+- **Auth**  
+  - Chat routes accept either **user** or **lawyer** JWT (`chatAuthMiddleware`).  
+  - Only the user and lawyer of that consultation can read/send messages.
+
+- **UI**  
+  - Chat page lists the current user’s/lawyer’s accepted consultations as threads.  
+  - Selecting a thread loads messages (polling every few seconds) and allows sending new messages.  
+  - Messages show sender type (user/lawyer) and content.
+
+- **Endpoints**  
+  - `GET /consultations/:consultationId/messages`  
+  - `POST /consultations/:consultationId/messages` (body: `{ content }`).
+
+---
+
+### 11. Reporting
+
+- **Report a lawyer**  
+  - From lawyer detail or from a consultation card.  
+  - `POST /reports/lawyer` with lawyerId, reason, description (optional).  
+  - Only authenticated users.
+
+- **Report a user**  
+  - `POST /reports/user` with userId, reason, description (optional).  
+  - Used in contexts where a user needs to report another user.
+
+- **Admin**  
+  - Reports tab: list reports, filter by status (pending, resolved, dismissed).  
+  - Resolve or dismiss with optional admin notes.  
+  - Stats include pending reports count.
+
+---
+
+### 12. Admin Panel
+
+- **Access**  
+  - Only users with `role === 'admin'` (and not suspended).  
+  - Nav link “Admin” visible only for admins.
+
+- **Tabs**  
+  1. **Overview** – Stats: total users, lawyers, pending lawyers, approved lawyers, consultations, pending reports, suspended users, suspended lawyers.  
+  2. **Pending Lawyers** – List of lawyers with status `pending`; approve or reject (with optional rejection reason).  
+  3. **All Users** – Table of users; suspend/activate (admin cannot suspend another admin).  
+  4. **All Lawyers** – Table of lawyers; suspend/activate approved lawyers; for pending, approve/reject.  
+  5. **Reports** – List reports; filter by status; resolve or dismiss with notes.  
+  6. **Articles** – CRUD for Legal Guide articles (title, slug, category, excerpt, content, language).
+
+- **Endpoints**  
+  - All under `/api/admin/*`, protected by `authMiddleware` + `adminMiddleware`.
+
+---
+
+### 13. User Profile
+
+- **View**  
+  - Name, email, phone, age, state (from Redux/context).  
+  - **Saved Lawyers**: list with “View” (opens lawyer detail) and “Remove”.
+
+- **Edit**  
+  - Update profile via `PUT /auth/profile` (if implemented in UI).
+
+---
+
+### 14. Lawyer Profile (Lawyer Dashboard)
+
+- **View**  
+  - Lawyer’s own profile, stats, consultations.  
+  - Consultation management: accept/reject/complete with response message.
+
+---
+
+### 15. Other Client Behaviour
+
+- **URL for article in new window**  
+  - `window.location.origin + pathname + '?articleId=' + articleId`.  
+  - App on load reads `?articleId=` and switches to Article view.
+
+- **Redux**  
+  - Slices: `auth` (user, token, isAuthenticated), `lawyer` (lawyer, token, isLawyerAuthenticated, approvedLawyers, pendingLawyers), `consultation` (consultations, lawyerDetail, reviews, loading, error).  
+  - Used for auth state, lawyer list, consultation list, lawyer detail, and reviews.
+
+- **Context (AppContext)**  
+  - Language, user, page, setPage, openLawyerId, setOpenLawyerId, openForFollowUp, setOpenForFollowUp, openArticleId, setOpenArticleId, registerForm, dashboardData, setDashboardData, translations `t`.
+
+---
+
+## API Reference
+
+Base URL: `/api` (e.g. `http://localhost:5000/api`).
+
+### Auth (`/auth`)
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| POST   | `/auth/register` | — | Register user (name, email, password, phone, age, state) |
+| POST   | `/auth/login` | — | Login user (email, password) |
+| GET    | `/auth/me` | User | Current user |
+| PUT    | `/auth/profile` | User | Update profile |
+| GET    | `/auth/saved-lawyers` | User | List saved lawyers |
+| POST   | `/auth/saved-lawyers/:lawyerId` | User | Save lawyer |
+| DELETE | `/auth/saved-lawyers/:lawyerId` | User | Unsave lawyer |
+
+### Dashboard (`/dashboard`)
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET    | `/dashboard/insights` | User | Top 10 problems & rights (by age/state) via Gemini |
+
+### Lawyers (`/lawyers`)
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| POST   | `/lawyers/register` | — | Register lawyer (pending until approved) |
+| POST   | `/lawyers/login` | — | Login lawyer |
+| GET    | `/lawyers/me` | Lawyer | Current lawyer |
+| PUT    | `/lawyers/profile` | Lawyer | Update lawyer profile |
+| GET    | `/lawyers/stats` | Lawyer | Lawyer stats |
+| GET    | `/lawyers/approved` | — | List approved lawyers (query: state, specialization, search) |
+| GET    | `/lawyers/pending` | Admin | Pending lawyers |
+| PUT    | `/lawyers/:lawyerId/status` | Admin | Approve/reject lawyer (body: status, rejectionReason) |
+
+### Consultations (`/consultations`)
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET    | `/consultations/lawyer/:lawyerId` | — | Lawyer detail + reviews |
+| POST   | `/consultations` | User | Create consultation request |
+| GET    | `/consultations/user` | User | User’s consultations |
+| GET    | `/consultations/lawyer` | Lawyer | Lawyer’s consultations (query: status) |
+| PUT    | `/consultations/:id/status` | Lawyer | Accept/reject/complete (body: status, lawyerResponse) |
+| POST   | `/consultations/:id/rating` | User | Add rating & review (body: rating, review) |
+| PUT    | `/consultations/:id/cancel` | User | Cancel consultation |
+| GET    | `/consultations/:id/messages` | User or Lawyer | Chat messages |
+| POST   | `/consultations/:id/messages` | User or Lawyer | Send message (body: content) |
+
+### Articles (`/articles`)
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET    | `/articles` | Optional | List articles (query: category, language); includes readCount, likeCount, dislikeCount, myReaction if logged in |
+| GET    | `/articles/:id` | Optional | Single article (id or slug); includes myReaction if logged in |
+| POST   | `/articles/:id/read` | — | Increment read count |
+| POST   | `/articles/:id/like` | User | Set like (one reaction per user per article) |
+| POST   | `/articles/:id/dislike` | User | Set dislike |
+| POST   | `/articles` | Admin | Create article |
+| PUT    | `/articles/:id` | Admin | Update article |
+| DELETE | `/articles/:id` | Admin | Delete article |
+
+### Reports (`/reports`)
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| POST   | `/reports/lawyer` | User | Report lawyer (body: lawyerId, reason, description) |
+| POST   | `/reports/user` | User | Report user (body: userId, reason, description) |
+
+### Admin (`/admin`)
+
+All require user + admin.
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET    | `/admin/stats` | Dashboard stats |
+| GET    | `/admin/users` | All users |
+| GET    | `/admin/lawyers` | All lawyers |
+| PUT    | `/admin/users/:userId/status` | Suspend/activate user (body: isSuspended) |
+| PUT    | `/admin/lawyers/:lawyerId/suspend` | Suspend/activate lawyer (body: isSuspended) |
+| GET    | `/admin/reports` | List reports (query: status) |
+| PUT    | `/admin/reports/:reportId/resolve` | Resolve or dismiss (body: action, adminNotes) |
+
+### Resources (`/resources`)
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET    | `/resources` | — | Static helplines and links |
+
+---
+
+## Data Models
+
+### User
+
+- name, email, password (hashed), phone, age, state, role (`user` | `admin`), isSuspended, savedLawyers (ObjectIds ref Lawyer), timestamps.
+
+### Lawyer
+
+- name, email, password (hashed), phone, barNumber, specialization[], experience, state, city, address, status (`pending` | `approved` | `rejected`), rejectionReason, verifiedBy, verifiedAt, bio, education[], languages[], consultationFee, availability (weekday slots), averageRating, totalRatings, totalConsultations, isSuspended, timestamps.
+
+### Consultation
+
+- user, lawyer, subject, description, status (`pending` | `accepted` | `rejected` | `completed` | `cancelled`), preferredDate, preferredTime, consultationType, lawyerResponse, rating, review, respondedAt, completedAt, timestamps.
+
+### Message
+
+- consultation, senderType (`user` | `lawyer`), senderId, content (max 2000), timestamps.
+
+### Report
+
+- reportedBy (User), reportType (`lawyer` | `user`), reportedLawyer, reportedUser, reason, description, status (`pending` | `resolved` | `dismissed`), resolvedBy, resolvedAt, adminNotes, timestamps.
+
+### Article
+
+- title, slug (unique), category, excerpt, content, language, createdBy (User), readCount, likeCount, dislikeCount, timestamps.
+
+### ArticleReaction
+
+- user (User), article (Article), action (`like` | `dislike`). Unique index on (user, article).
+
+---
+
+## Project Structure
+
+### Client (`Client/`)
+
+```
+src/
+├── App.jsx                 # App root; URL ?articleId= → article view
+├── main.jsx
+├── components/
+│   ├── common/             # GlassCard, InputField, StateDropdown
+│   ├── Header/Header.jsx   # Nav + user/lawyer menu
+│   ├── Hero/Hero.jsx       # Home
+│   ├── Register/Register.jsx
+│   ├── Login/Login.jsx
+│   ├── Dashboard/          # Dashboard.jsx, InfoCard.jsx
+│   ├── Assistant/Assistant.jsx  # Legal AI chat
+│   ├── Resources/Resources.jsx  # Helplines & links
+│   ├── LegalGuide/         # LegalGuide.jsx (list), ArticleView.jsx (full article)
+│   ├── Lawyer/             # LawyerListing, LawyerDetail, LawyerRegister, LawyerLogin, LawyerProfile, ConsultationManagement
+│   ├── Consultation/       # ConsultationRequest, UserConsultations
+│   ├── Chat/Chat.jsx
+│   ├── Profile/UserProfile.jsx
+│   ├── Admin/AdminPanel.jsx
+│   └── PageRouter.jsx      # Renders page by context `page`
+├── constants/
+│   ├── translations.js     # en / hi
+│   ├── indianStates.js
+│   ├── lawyerSpecializations.js
+│   └── articleCategories.js
+├── context/AppContext.jsx
+├── hooks/useTTS.js, useSpeechRecognition.js
+├── services/api.js         # Axios instances, authAPI, dashboardAPI, lawyerAPI, consultationAPI, chatAPI, adminAPI, reportAPI, resourcesAPI, articlesAPI, Gemini helpers
+├── store/
+│   ├── store.js
+│   └── slices/authSlice.js, lawyerSlice.js, consultationSlice.js
+└── styles/App.css
+```
+
+### Server (`Server/`)
+
+```
+├── index.js                # Express app, CORS, routes, MongoDB connect
+├── controller/
+│   ├── authController.js
+│   ├── dashboardController.js   # getDemographicInsights (Gemini)
+│   ├── lawyerController.js
+│   ├── consultationController.js
+│   ├── chatController.js
+│   ├── articleController.js
+│   ├── reportController.js
+│   ├── adminController.js
+│   └── resourcesController.js
+├── middleware/
+│   ├── authMiddleware.js   # authMiddleware, adminMiddleware, optionalAuthMiddleware
+│   ├── lawyerAuthMiddleware.js
+│   └── chatAuthMiddleware.js
+├── models/
+│   ├── User.js
+│   ├── Lawyer.js
+│   ├── Consultation.js
+│   ├── Message.js
+│   ├── Report.js
+│   ├── Article.js
+│   └── ArticleReaction.js
+└── routes/
+    ├── authRoutes.js
+    ├── dashboardRoutes.js
+    ├── lawyerRoutes.js
+    ├── consultationRoutes.js
+    ├── articleRoutes.js
+    ├── reportRoutes.js
+    ├── adminRoutes.js
+    └── resourcesRoutes.js
+```
+
+---
+
+## Admin & First-Time Setup
+
+- **Create an admin user**  
+  - Register a normal user, then in MongoDB set `role: 'admin'` for that user:
+    ```js
+    db.users.updateOne(
+      { email: "admin@example.com" },
+      { $set: { role: "admin" } }
+    )
+    ```
+- **Lawyers**  
+  - New lawyers get status `pending`. They appear in “Find Lawyers” only after an admin approves them in the Admin panel.  
+- **Gemini**  
+  - Dashboard insights require `GEMINI_API_KEY` in `Server/.env`.  
+  - Legal Assistant uses `VITE_GEMINI_API_KEY` in the client (optional if you only use server dashboard).
+
+---
+
+## Notes
+
+- MongoDB must be running before starting the server.
+- Use a strong `JWT_SECRET` in production.
+- User and lawyer tokens are separate; stored as `token` and `lawyerToken` in `localStorage`.
+- Passwords are hashed with bcrypt.
+- Suspended users/lawyers cannot log in; suspended lawyers are excluded from listing and consultation creation.
+- Chat is only for consultations with status `accepted`; when a consultation is marked `completed`, its messages are deleted.
+- One rating per completed consultation; lawyer’s average and total ratings are updated from consultation ratings.
+- Article like/dislike: one reaction per user per article (like and dislike mutually exclusive).
+
+---
+
+**© 2025 Shakti-Setu. Not legal advice.**
