@@ -73,12 +73,12 @@ const Register = () => {
       }
     } else {
       if (lawyerForm.specialization.length === 0) {
-        alert('Please select at least one specialization');
+        alert(t.selectAtLeastOneSpecialization);
         return;
       }
       const result = await dispatch(registerLawyer(lawyerForm));
       if (registerLawyer.fulfilled.match(result)) {
-        alert('Registration successful! Waiting for admin approval.');
+        alert(t.registrationSuccessPending);
         setPage('home');
       }
     }
@@ -93,8 +93,8 @@ const Register = () => {
     <div className="page-container center-content">
       <GlassCard className="register-card" style={{ maxWidth: mode === 'lawyer' ? '600px' : undefined }}>
         <div className="register-header">
-          <h2>{mode === 'user' ? t.registerTitle : 'Lawyer Registration'}</h2>
-          <p>{mode === 'user' ? t.registerIntro : 'Register as a lawyer to help women with legal issues'}</p>
+          <h2>{mode === 'user' ? t.registerTitle : t.lawyerRegistrationTitle}</h2>
+          <p>{mode === 'user' ? t.registerIntro : t.lawyerRegistrationIntro}</p>
         </div>
 
         <div
@@ -128,7 +128,7 @@ const Register = () => {
             }}
           >
             <User size={18} />
-            Register as User
+            {t.registerAsUser}
           </button>
           <button
             type="button"
@@ -150,7 +150,7 @@ const Register = () => {
             }}
           >
             <Scale size={18} />
-            Register as Lawyer
+            {t.registerAsLawyer}
           </button>
         </div>
 
@@ -185,23 +185,23 @@ const Register = () => {
               />
               <InputField
                 icon={Mail}
-                label="Email"
+                label={t.email}
                 type="email"
                 required
                 value={userForm.email}
                 onChange={(e) => setUserForm({ ...userForm, email: e.target.value })}
                 placeholder="your.email@example.com"
-                onSpeak={() => speak('Email', language)}
+                onSpeak={() => speak(t.email, language)}
               />
               <InputField
                 icon={Lock}
-                label="Password"
+                label={t.password}
                 type="password"
                 required
                 value={userForm.password}
                 onChange={(e) => setUserForm({ ...userForm, password: e.target.value })}
                 placeholder="Minimum 6 characters"
-                onSpeak={() => speak('Password', language)}
+                onSpeak={() => speak(t.password, language)}
               />
               <InputField
                 icon={Calendar}
@@ -217,8 +217,8 @@ const Register = () => {
                 value={userForm.state}
                 onChange={(e) => setUserForm({ ...userForm, state: e.target.value })}
                 label={t.registerState}
+                placeholder={t.stateSelect}
                 onSpeak={() => speak(t.registerState, language)}
-                language={language}
               />
               <InputField
                 icon={Phone}
@@ -235,92 +235,92 @@ const Register = () => {
             <>
               <InputField
                 icon={User}
-                label="Full Name"
+                label={t.fullName}
                 type="text"
                 required
                 value={lawyerForm.name}
                 onChange={(e) => setLawyerForm({ ...lawyerForm, name: e.target.value })}
                 placeholder="e.g. Adv. Priya Sharma"
-                onSpeak={() => speak('Full Name', language)}
+                onSpeak={() => speak(t.fullName, language)}
               />
               <InputField
                 icon={Mail}
-                label="Email"
+                label={t.email}
                 type="email"
                 required
                 value={lawyerForm.email}
                 onChange={(e) => setLawyerForm({ ...lawyerForm, email: e.target.value })}
                 placeholder="your.email@example.com"
-                onSpeak={() => speak('Email', language)}
+                onSpeak={() => speak(t.email, language)}
               />
               <InputField
                 icon={Lock}
-                label="Password"
+                label={t.password}
                 type="password"
                 required
                 value={lawyerForm.password}
                 onChange={(e) => setLawyerForm({ ...lawyerForm, password: e.target.value })}
                 placeholder="Minimum 6 characters"
-                onSpeak={() => speak('Password', language)}
+                onSpeak={() => speak(t.password, language)}
               />
               <InputField
                 icon={Phone}
-                label="Phone Number"
+                label={t.phoneNumber}
                 type="tel"
                 required
                 value={lawyerForm.phone}
                 onChange={(e) => setLawyerForm({ ...lawyerForm, phone: e.target.value })}
                 placeholder="e.g. 9876543210"
-                onSpeak={() => speak('Phone Number', language)}
+                onSpeak={() => speak(t.phoneNumber, language)}
               />
               <InputField
                 icon={FileText}
-                label="Bar Number"
+                label={t.barNumber}
                 type="text"
                 required
                 value={lawyerForm.barNumber}
                 onChange={(e) => setLawyerForm({ ...lawyerForm, barNumber: e.target.value })}
                 placeholder="e.g. BAR/2020/12345"
-                onSpeak={() => speak('Bar Number', language)}
+                onSpeak={() => speak(t.barNumber, language)}
               />
               <StateDropdown
                 value={lawyerForm.state}
                 onChange={(e) => setLawyerForm({ ...lawyerForm, state: e.target.value })}
-                label="State/Region"
-                onSpeak={() => speak('State', language)}
-                language={language}
+                label={t.registerState}
+                placeholder={t.stateSelect}
+                onSpeak={() => speak(t.registerState, language)}
               />
               <InputField
                 icon={MapPin}
-                label="City"
+                label={t.city}
                 type="text"
                 value={lawyerForm.city}
                 onChange={(e) => setLawyerForm({ ...lawyerForm, city: e.target.value })}
                 placeholder="e.g. Mumbai"
-                onSpeak={() => speak('City', language)}
+                onSpeak={() => speak(t.city, language)}
               />
               <InputField
                 icon={Briefcase}
-                label="Address (Optional)"
+                label={t.addressOptional}
                 type="text"
                 value={lawyerForm.address}
                 onChange={(e) => setLawyerForm({ ...lawyerForm, address: e.target.value })}
                 placeholder="Office address"
-                onSpeak={() => speak('Address', language)}
+                onSpeak={() => speak(t.addressOptional, language)}
               />
               <InputField
                 icon={Briefcase}
-                label="Years of Experience"
+                label={t.yearsExperience}
                 type="number"
                 required
                 min="0"
                 value={lawyerForm.experience}
                 onChange={(e) => setLawyerForm({ ...lawyerForm, experience: e.target.value })}
                 placeholder="e.g. 5"
-                onSpeak={() => speak('Experience', language)}
+                onSpeak={() => speak(t.yearsExperience, language)}
               />
               <div className="input-group">
-                <label style={{ marginBottom: '10px' }}>Specialization (Select at least one) *</label>
+                <label style={{ marginBottom: '10px' }}>{t.specializationTitle}</label>
                 <div
                   style={{
                     display: 'grid',
@@ -362,13 +362,13 @@ const Register = () => {
             {loading
               ? mode === 'user'
                 ? t.registerLoading
-                : 'Registering...'
+                : t.registering
               : mode === 'user'
                 ? t.registerButton
-                : 'Register as Lawyer'}
+                : t.registerAsLawyer}
           </button>
           <p style={{ textAlign: 'center', marginTop: '1rem', color: 'var(--text-muted)' }}>
-            Already have an account?{' '}
+            {t.alreadyHaveAccount}{' '}
             <button
               type="button"
               onClick={() => setPage('login')}
@@ -380,7 +380,7 @@ const Register = () => {
                 textDecoration: 'underline',
               }}
             >
-              Login here
+              {t.loginHere}
             </button>
           </p>
         </form>

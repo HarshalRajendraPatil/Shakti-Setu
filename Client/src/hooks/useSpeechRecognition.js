@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useContext } from 'react';
 import { AppContext } from '../context/AppContext';
+import { LANGUAGE_NAME_MAP } from '../constants/translations';
 
 export const useSpeechRecognition = (onResult) => {
   const [isListening, setIsListening] = useState(false);
@@ -11,7 +12,7 @@ export const useSpeechRecognition = (onResult) => {
     if (!SpeechRecognition) return;
 
     const recognition = new SpeechRecognition();
-    recognition.lang = language === 'hi' ? 'hi-IN' : 'en-US';
+    recognition.lang = LANGUAGE_NAME_MAP[language]?.locale || 'en-IN';
     recognition.interimResults = false;
     recognition.continuous = false;
 

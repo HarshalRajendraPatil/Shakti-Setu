@@ -47,13 +47,18 @@ const Header = () => {
   const { isAuthenticated: isLawyerAuthenticated, lawyer } = useSelector(
     (state) => state.lawyer,
   );
-  const { t, language, setLanguage, setPage, page } = useContext(AppContext);
+  const { t, language, setLanguage, setPage, page, supportedLanguages } = useContext(AppContext);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
 
   const isAdmin = user?.role === "admin";
   const isUser = isAuthenticated && !isLawyerAuthenticated;
   const isLawyer = isLawyerAuthenticated;
+  const languageCodes = supportedLanguages.map((lang) => lang.code);
+  const currentLangIndex = languageCodes.indexOf(language);
+  const nextLangCode = languageCodes[(currentLangIndex + 1) % languageCodes.length] || "en";
+  const currentLanguageMeta = supportedLanguages.find((lang) => lang.code === language) || supportedLanguages[0];
+  const nextLanguageMeta = supportedLanguages.find((lang) => lang.code === nextLangCode) || supportedLanguages[0];
 
   const handleLogout = () => {
     if (isUser) dispatch(logout());
@@ -72,28 +77,28 @@ const Header = () => {
     if (isUser) {
       return [
         ...baseItems,
-        { id: "profile", label: "Profile" },
-        { id: "my-consultations", label: "My Consultations" },
+        { id: "profile", label: t.navProfile },
+        { id: "my-consultations", label: t.navMyConsultations },
         { id: "chat", label: t.navChat },
-        { id: "lawyers", label: "Find Lawyers" },
-        { id: "dashboard", label: "Dashboard" },
+        { id: "lawyers", label: t.navFindLawyers },
+        { id: "dashboard", label: t.navDashboard },
         { id: "feedback", label: t.navFeedback || "Feedback" },
         { id: "assistant", label: t.navAssistant },
-        ...(isAdmin ? [{ id: "admin", label: "Admin" }] : []),
+        ...(isAdmin ? [{ id: "admin", label: t.navAdmin }] : []),
       ];
     }
     if (isLawyer) {
       return [
         ...baseItems,
-        { id: "lawyer-dashboard", label: "Profile" },
+        { id: "lawyer-dashboard", label: t.navLawyerProfile },
         { id: "feedback", label: t.navFeedback || "Feedback" },
         { id: "chat", label: t.navChat },
-        { id: "lawyers", label: "Browse Lawyers" },
+        { id: "lawyers", label: t.navBrowseLawyers },
       ];
     }
     return [
       ...baseItems,
-      { id: "lawyers", label: "Find Lawyers" },
+      { id: "lawyers", label: t.navFindLawyers },
       { id: "assistant", label: t.navAssistant },
     ];
   };
@@ -136,12 +141,12 @@ const Header = () => {
                   className="nav-icon-btn nav-user-btn"
                   onClick={() => setUserMenuOpen((o) => !o)}
                   title={isUser ? user?.name : lawyer?.name}
-                  aria-label="Account menu"
+                  aria-label={t.accountMenu}
                   aria-expanded={userMenuOpen}
                 >
                   <User size={20} />
                   <span className="nav-user-name">
-                    {(isUser ? user?.name : lawyer?.name)?.split(" ")[0] || "Account"}
+                    {(isUser ? user?.name : lawyer?.name)?.split(" ")[0] || t.account}
                   </span>
                   <ChevronDown size={14} style={{ opacity: 0.8 }} />
                 </button>
@@ -164,7 +169,7 @@ const Header = () => {
                         className="nav-dropdown-item nav-dropdown-logout"
                       >
                         <LogOut size={18} />
-                        Logout
+                        {t.logout}
                       </button>
                     </div>
                   </>
@@ -175,35 +180,38 @@ const Header = () => {
                 <button
                   onClick={() => setPage("register")}
                   className="nav-icon-btn"
-                  title="Register"
-                  aria-label="Register"
+                  title={t.register}
+                  aria-label={t.register}
                 >
                   <User size={20} color="#c084fc" />
                 </button>
                 <button
                   onClick={() => setPage("login")}
                   className="nav-icon-btn"
-                  title="Login"
-                  aria-label="Login"
+                  title={t.login}
+                  aria-label={t.login}
                 >
                   <LogIn size={20} color="#a855f7" />
                 </button>
               </>
             )}
             <button
-              onClick={() => setLanguage((l) => (l === "en" ? "hi" : "en"))}
+              onClick={() => setLanguage(nextLangCode)}
               className="nav-icon-btn"
-              title={`Language: ${language === "en" ? "Switch to Hindi" : "Switch to English"}`}
-              aria-label={`Language ${language.toUpperCase()}`}
+              title={`${t.languageSwitch}: ${currentLanguageMeta.nativeName} -> ${nextLanguageMeta.nativeName}`}
+              aria-label={`${t.languageSwitch} ${currentLanguageMeta.nativeName}`}
             >
               <Globe size={20} color="#c084fc" />
+              <span className="nav-user-name" style={{ marginLeft: 6 }}>
+                {currentLanguageMeta.nativeName}
+              </span>
             </button>
           </nav>
 
           <div className="mobile-toggle">
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+              aria-label={mobileMenuOpen ? t.closeMenu : t.openMenu}
             >
               {mobileMenuOpen ? <X size={24} color="white" /> : <Menu size={24} color="white" />}
             </button>
@@ -248,7 +256,7 @@ const Header = () => {
                   className="mobile-lang-toggle mobile-logout"
                 >
                   <LogOut size={20} />
-                  Logout
+                  {t.logout}
                 </button>
               ) : (
                 <>
@@ -260,7 +268,7 @@ const Header = () => {
                     className="mobile-lang-toggle"
                   >
                     <User size={20} />
-                    Register
+                    {t.register}
                   </button>
                   <button
                     onClick={() => {
@@ -270,19 +278,19 @@ const Header = () => {
                     className="mobile-lang-toggle"
                   >
                     <LogIn size={20} />
-                    Login
+                    {t.login}
                   </button>
                 </>
               )}
               <button
                 onClick={() => {
-                  setLanguage((l) => (l === "en" ? "hi" : "en"));
+                  setLanguage(nextLangCode);
                   setMobileMenuOpen(false);
                 }}
                 className="mobile-lang-toggle"
               >
                 <Globe size={20} />
-                {language === "en" ? "हिंदी" : "EN"}
+                {`${currentLanguageMeta.nativeName} -> ${nextLanguageMeta.nativeName}`}
               </button>
             </div>
           </div>

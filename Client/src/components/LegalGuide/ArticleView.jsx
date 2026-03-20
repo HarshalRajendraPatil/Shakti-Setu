@@ -6,7 +6,7 @@ import { ThumbsUp, ThumbsDown, Eye } from 'lucide-react';
 import { useSelector } from 'react-redux';
 
 const ArticleView = () => {
-  const { openArticleId, language } = useContext(AppContext);
+  const { openArticleId, t } = useContext(AppContext);
   const { isAuthenticated } = useSelector((state) => state.auth);
   const [article, setArticle] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -63,13 +63,11 @@ const ArticleView = () => {
     setReactionLoading(false);
   };
 
-  const isHi = language === 'hi';
-
   if (!openArticleId) {
     return (
       <div className="page-container center-content">
         <GlassCard style={{ padding: '2rem', textAlign: 'center' }}>
-          <p style={{ color: 'var(--text-muted)' }}>No article selected.</p>
+          <p style={{ color: 'var(--text-muted)' }}>{t.articleNoSelection}</p>
         </GlassCard>
       </div>
     );
@@ -78,7 +76,7 @@ const ArticleView = () => {
   if (loading) {
     return (
       <div className="page-container center-content">
-        <p style={{ color: 'var(--text-muted)' }}>{isHi ? 'लेख लोड हो रहा है...' : 'Loading article...'}</p>
+        <p style={{ color: 'var(--text-muted)' }}>{t.articleLoading}</p>
       </div>
     );
   }
@@ -87,7 +85,7 @@ const ArticleView = () => {
     return (
       <div className="page-container center-content">
         <GlassCard style={{ padding: '2rem', textAlign: 'center' }}>
-          <p style={{ color: 'var(--text-muted)' }}>Article not found.</p>
+          <p style={{ color: 'var(--text-muted)' }}>{t.articleNotFound}</p>
         </GlassCard>
       </div>
     );
@@ -116,15 +114,15 @@ const ArticleView = () => {
         <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem', fontSize: '0.9rem', color: 'var(--text-muted)' }}>
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
             <Eye size={18} />
-            {article.readCount ?? 0} reads
+            {article.readCount ?? 0} {t.legalGuideReads}
           </span>
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
             <ThumbsUp size={18} />
-            {article.likeCount ?? 0} likes
+            {article.likeCount ?? 0} {t.articleLikes}
           </span>
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
             <ThumbsDown size={18} />
-            {article.dislikeCount ?? 0} dislikes
+            {article.dislikeCount ?? 0} {t.articleDislikes}
           </span>
           {isAuthenticated && (
             <span style={{ display: 'inline-flex', gap: '8px', marginLeft: 'auto' }}>
@@ -145,7 +143,7 @@ const ArticleView = () => {
                   fontSize: '0.9rem'
                 }}
               >
-                <ThumbsUp size={18} /> Like
+                <ThumbsUp size={18} /> {t.like}
               </button>
               <button
                 type="button"
@@ -164,7 +162,7 @@ const ArticleView = () => {
                   fontSize: '0.9rem'
                 }}
               >
-                <ThumbsDown size={18} /> Dislike
+                <ThumbsDown size={18} /> {t.dislike}
               </button>
             </span>
           )}
@@ -179,9 +177,7 @@ const ArticleView = () => {
           {article.content}
         </div>
         <p style={{ marginTop: '1.5rem', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-          {isHi
-            ? 'यह जानकारी कानूनी सलाह नहीं है। अपनी स्थिति के लिए किसी वकील से परामर्श करें।'
-            : 'This information is not legal advice. Consult a lawyer for your situation.'}
+          {t.articleDisclaimer}
         </p>
       </GlassCard>
     </div>

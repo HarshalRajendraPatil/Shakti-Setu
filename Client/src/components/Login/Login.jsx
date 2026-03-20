@@ -41,9 +41,9 @@ const Login = () => {
       if (loginLawyer.fulfilled.match(result)) {
         const { status } = result.payload.lawyer;
         if (status === "pending") {
-          alert("Your registration is pending admin approval.");
+          alert(t.pendingApproval);
         } else if (status === "rejected") {
-          alert("Your registration has been rejected. Please contact admin.");
+          alert(t.rejectedStatus);
         }
         setPage("home");
       }
@@ -59,8 +59,8 @@ const Login = () => {
     <div className="page-container center-content">
       <GlassCard className="register-card">
         <div className="register-header">
-          <h2>Login</h2>
-          <p>Welcome back! Sign in to continue.</p>
+          <h2>{t.loginTitle}</h2>
+          <p>{t.loginSubtitle}</p>
         </div>
 
         <div
@@ -94,7 +94,7 @@ const Login = () => {
             }}
           >
             <User size={18} />
-            Login as User
+            {t.loginAsUser}
           </button>
           <button
             type="button"
@@ -116,7 +116,7 @@ const Login = () => {
             }}
           >
             <Scale size={18} />
-            Login as Lawyer
+            {t.loginAsLawyer}
           </button>
         </div>
 
@@ -139,7 +139,7 @@ const Login = () => {
         <form onSubmit={handleSubmit} className="register-form">
           <InputField
             icon={Mail}
-            label="Email"
+            label={t.email}
             type="email"
             required
             value={formData.email}
@@ -150,7 +150,7 @@ const Login = () => {
           />
           <InputField
             icon={Lock}
-            label="Password"
+            label={t.password}
             type="password"
             required
             value={formData.password}
@@ -164,7 +164,7 @@ const Login = () => {
             className="btn-primary full-width"
             disabled={loading}
           >
-            {loading ? "Logging in..." : "Login"}
+            {loading ? t.loginLoading : t.login}
           </button>
           <p
             style={{
@@ -173,7 +173,7 @@ const Login = () => {
               color: "var(--text-muted)",
             }}
           >
-            Don&apos;t have an account?{" "}
+            {t.noAccount}{" "}
             <button
               type="button"
               onClick={() => setPage("register")}
@@ -185,7 +185,7 @@ const Login = () => {
                 textDecoration: "underline",
               }}
             >
-              Register here
+              {t.registerHere}
             </button>
           </p>
         </form>

@@ -33,7 +33,7 @@ const Hero = () => {
           </button>
           <button onClick={handleSpeak} className={`btn-secondary ${speaking ? 'speaking' : ''}`}>
             {speaking ? <Volume2 size={20} className="icon-pulse" /> : <Volume2 size={20} />}
-            {speaking ? "Speaking..." : t.hearIntro}
+            {speaking ? t.speaking : t.hearIntro}
           </button>
         </div>
         <div className="features-grid">

@@ -4,6 +4,7 @@ import { AppContext } from '../../context/AppContext';
 import GlassCard from '../common/GlassCard';
 import { BookOpen, FileText, Calendar, ThumbsUp, ThumbsDown, ExternalLink, Eye } from 'lucide-react';
 import { ARTICLE_CATEGORIES } from '../../constants/articleCategories';
+import { LANGUAGE_NAME_MAP } from '../../constants/translations';
 import { useSelector } from 'react-redux';
 
 const PREVIEW_LENGTH = 200;
@@ -15,7 +16,7 @@ function getArticleUrl(articleId) {
 }
 
 const LegalGuide = () => {
-  const { language } = useContext(AppContext);
+  const { language, t } = useContext(AppContext);
   const { isAuthenticated } = useSelector((state) => state.auth);
   const [articles, setArticles] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -75,25 +76,23 @@ const LegalGuide = () => {
     window.open(getArticleUrl(articleId), '_blank', 'noopener,noreferrer');
   };
 
-  const isHi = language === 'hi';
+  const dateLocale = LANGUAGE_NAME_MAP[language]?.locale || 'en-IN';
 
   return (
     <div className="page-container" style={{ maxWidth: '1000px', margin: '0 auto' }}>
       <div style={{ marginBottom: '2rem' }}>
         <h2 style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '0.5rem' }}>
           <BookOpen size={28} color="#a855f7" />
-          {isHi ? 'अपने अधिकार जानें' : 'Know Your Rights'}
+          {t.legalGuideTitle}
         </h2>
         <p style={{ color: 'var(--text-muted)' }}>
-          {isHi
-            ? 'सरल भाषा में कानूनी जानकारी पढ़ें। किसी वकील से परामर्श लेने से पहले अपने अधिकारों को समझें।'
-            : 'Read legal information in simple language. Understand your rights before consulting a lawyer.'}
+          {t.legalGuideSubtitle}
         </p>
       </div>
 
       <GlassCard style={{ marginBottom: '1.5rem', padding: '1rem' }}>
         <p style={{ marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--text-muted)' }}>
-          {isHi ? 'श्रेणी' : 'Category'}
+          {t.legalGuideCategory}
         </p>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
           <button
@@ -108,7 +107,7 @@ const LegalGuide = () => {
               fontSize: '0.9rem'
             }}
           >
-            {isHi ? 'सभी' : 'All'}
+            {t.legalGuideAll}
           </button>
           {ARTICLE_CATEGORIES.map((cat) => (
             <button
@@ -132,7 +131,7 @@ const LegalGuide = () => {
 
       {loading ? (
         <div className="center-content" style={{ padding: '2rem' }}>
-          <p style={{ color: 'var(--text-muted)' }}>{isHi ? 'लोड हो रहा है...' : 'Loading...'}</p>
+          <p style={{ color: 'var(--text-muted)' }}>{t.legalGuideLoading}</p>
         </div>
       ) : error ? (
         <GlassCard style={{ textAlign: 'center', padding: '2rem' }}>
@@ -142,7 +141,7 @@ const LegalGuide = () => {
         <GlassCard style={{ textAlign: 'center', padding: '2rem' }}>
           <FileText size={48} style={{ margin: '0 auto 1rem', color: 'var(--text-muted)' }} />
           <p style={{ color: 'var(--text-muted)' }}>
-            {isHi ? 'इस श्रेणी में अभी कोई लेख नहीं है।' : 'No articles in this category yet.'}
+            {t.legalGuideNoArticles}
           </p>
         </GlassCard>
       ) : (
@@ -176,7 +175,7 @@ const LegalGuide = () => {
                     <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '1rem' }}>
                       <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
                         <Eye size={14} />
-                        {art.readCount ?? 0} reads
+                        {art.readCount ?? 0} {t.legalGuideReads}
                       </span>
                       <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
                         <ThumbsUp size={14} />
@@ -205,7 +204,7 @@ const LegalGuide = () => {
                               fontSize: '0.85rem'
                             }}
                           >
-                            <ThumbsUp size={14} /> Like
+                            <ThumbsUp size={14} /> {t.like}
                           </button>
                           <button
                             type="button"
@@ -224,7 +223,7 @@ const LegalGuide = () => {
                               fontSize: '0.85rem'
                             }}
                           >
-                            <ThumbsDown size={14} /> Dislike
+                            <ThumbsDown size={14} /> {t.dislike}
                           </button>
                         </span>
                       )}
@@ -244,13 +243,13 @@ const LegalGuide = () => {
                           fontSize: '0.9rem'
                         }}
                       >
-                        Read more <ExternalLink size={16} />
+                        {t.legalGuideReadMore} <ExternalLink size={16} />
                       </button>
                     </div>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', color: 'var(--text-muted)', flexShrink: 0 }}>
                     <Calendar size={14} />
-                    {new Date(art.createdAt).toLocaleDateString()}
+                    {new Date(art.createdAt).toLocaleDateString(dateLocale)}
                   </div>
                 </div>
               </GlassCard>

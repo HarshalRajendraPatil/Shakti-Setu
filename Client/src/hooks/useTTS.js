@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { LANGUAGE_NAME_MAP } from '../constants/translations';
 
 export const useTTS = () => {
   const [speaking, setSpeaking] = useState(false);
@@ -10,7 +11,7 @@ export const useTTS = () => {
 
     const utterance = new SpeechSynthesisUtterance(text);
     const voices = window.speechSynthesis.getVoices();
-    const targetLang = langCode === 'hi' ? 'hi-IN' : 'en-US';
+    const targetLang = LANGUAGE_NAME_MAP[langCode]?.locale || 'en-IN';
     
     const preferredVoice = voices.find(v => v.lang === targetLang && v.name.includes('Google'));
     if (preferredVoice) utterance.voice = preferredVoice;

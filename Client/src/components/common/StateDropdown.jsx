@@ -1,7 +1,7 @@
 import { MapPin, Volume2 } from 'lucide-react';
 import { INDIAN_STATES } from '../../constants/indianStates';
 
-const StateDropdown = ({ value, onChange, onSpeak, label, language }) => (
+const StateDropdown = ({ value, onChange, onSpeak, label, placeholder = 'Select State' }) => (
   <div className="input-group">
     <div className="label-row">
       <label>{label}</label>
@@ -28,7 +28,7 @@ const StateDropdown = ({ value, onChange, onSpeak, label, language }) => (
           cursor: 'pointer'
         }}
       >
-        <option value="">Select State</option>
+        <option value="">{placeholder}</option>
         {INDIAN_STATES.map((state) => (
           <option key={state.value} value={state.value}>
             {state.label}

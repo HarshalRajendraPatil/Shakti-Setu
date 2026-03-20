@@ -54,7 +54,7 @@ const Assistant = () => {
             <div>
               <h2>{t.assistantTitle}</h2>
               <p className="status-indicator">
-                <span className="dot"></span> Online
+                <span className="dot"></span> {t.assistantOnline}
               </p>
             </div>
           </div>

@@ -237,7 +237,14 @@ export const communityAPI = {
 export const fetchGroundedResponse = async (userQuery, user, language) => {
   const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
   const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
-  const targetLanguage = language === 'hi' ? 'Hindi' : 'English';
+  const languageNameMap = {
+    en: 'English',
+    hi: 'Hindi',
+    ta: 'Tamil',
+    mr: 'Marathi',
+    te: 'Telugu',
+  };
+  const targetLanguage = languageNameMap[language] || 'English';
 
   const systemPrompt = `You are 'Shakti-Setu', a helpful legal assistant for women in India. Provide information based on Indian law. Your tone is supportive, clear, and empowering. 
   
@@ -318,12 +325,18 @@ export const fetchDemographicInsights = async (age, state) => {
        Each item must be an object with:
        - "en" (English text)
        - "hi" (Hindi translation)
+       - "ta" (Tamil translation)
+       - "mr" (Marathi translation)
+       - "te" (Telugu translation)
        - "link" (a relevant article URL about this problem - use official government websites like wcd.nic.in, nalsa.gov.in, or other legal aid websites)
     
     2. "rights": An array of 10 legal rights relevant to these problems. 
        Each item must be an object with:
        - "en" (English text)
        - "hi" (Hindi translation)
+       - "ta" (Tamil translation)
+       - "mr" (Marathi translation)
+       - "te" (Telugu translation)
        - "link" (a relevant article URL about this right - use official government websites like wcd.nic.in, nalsa.gov.in, or other legal aid websites)
     
     Important: Provide real, working URLs. Use these base URLs as examples:
@@ -393,11 +406,17 @@ export const fetchDemographicInsights = async (age, state) => {
       problems: Array(10).fill(null).map((_, idx) => ({
         en: `Legal challenge ${idx + 1} for women in ${state}`,
         hi: `${state} में महिलाओं के लिए कानूनी चुनौती ${idx + 1}`,
+        ta: `${state} மாநில பெண்களுக்கான சட்ட சவால் ${idx + 1}`,
+        mr: `${state} मधील महिलांसाठी कायदेशीर आव्हान ${idx + 1}`,
+        te: `${state} లో మహిళల కోసం న్యాయ సవాలు ${idx + 1}`,
         link: "https://wcd.nic.in/"
       })),
       rights: Array(10).fill(null).map((_, idx) => ({
         en: `Legal right ${idx + 1} for women`,
         hi: `महिलाओं के लिए कानूनी अधिकार ${idx + 1}`,
+        ta: `பெண்களுக்கான சட்ட உரிமை ${idx + 1}`,
+        mr: `महिलांसाठी कायदेशीर हक्क ${idx + 1}`,
+        te: `మహిళల కోసం న్యాయ హక్కు ${idx + 1}`,
         link: "https://nalsa.gov.in/"
       }))
     };

@@ -1,7 +1,9 @@
 import { Volume2, ExternalLink } from 'lucide-react';
 import GlassCard from '../common/GlassCard';
 
-const InfoCard = ({ title, items, icon: Icon, color, language, speak }) => (
+const getLocalizedText = (item, language) => item?.[language] || item?.en || item?.hi || '';
+
+const InfoCard = ({ title, items, icon: Icon, color, language, speak, learnMoreLabel }) => (
   <GlassCard className="dashboard-column">
     <div className="column-header" style={{ borderBottomColor: color }}>
       {Icon && <Icon size={24} color={color} />}
@@ -15,7 +17,7 @@ const InfoCard = ({ title, items, icon: Icon, color, language, speak }) => (
               {idx + 1}
             </span>
             <div style={{ flex: 1 }}>
-              <p>{language === 'hi' ? item.hi : item.en}</p>
+              <p>{getLocalizedText(item, language)}</p>
               {item.link && (
                 <a 
                   href={item.link} 
@@ -33,13 +35,13 @@ const InfoCard = ({ title, items, icon: Icon, color, language, speak }) => (
                     fontWeight: 500
                   }}
                 >
-                  Learn more <ExternalLink size={14} />
+                  {learnMoreLabel} <ExternalLink size={14} />
                 </a>
               )}
             </div>
           </div>
           <button 
-            onClick={() => speak(language === 'hi' ? item.hi : item.en, language)} 
+            onClick={() => speak(getLocalizedText(item, language), language)} 
             className="card-speak-btn"
           >
             <Volume2 size={18} />

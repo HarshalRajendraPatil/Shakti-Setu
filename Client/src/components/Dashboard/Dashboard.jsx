@@ -39,7 +39,7 @@ const Dashboard = () => {
   }, [user?.age, user?.state, dashboardData, setDashboardData]);
 
   if (loading || (!dashboardData && !error)) {
-    return <div className="page-container center-content">Loading...</div>;
+    return <div className="page-container center-content">{t.dashboardLoading}</div>;
   }
 
   if (error && !dashboardData) {
@@ -54,7 +54,7 @@ const Dashboard = () => {
             }}
             className="btn-primary"
           >
-            Try again
+            {t.tryAgain}
           </button>
         </GlassCard>
       </div>
@@ -62,14 +62,14 @@ const Dashboard = () => {
   }
 
   if (!dashboardData) {
-    return <div className="page-container center-content">Loading...</div>;
+    return <div className="page-container center-content">{t.dashboardLoading}</div>;
   }
 
   return (
     <div className="page-container dashboard-layout">
       <div className="dashboard-header">
         <h2>{t.dashTitle}</h2>
-        <p>{user?.age} years old • {user?.state}</p>
+        <p>{user?.age} {t.yearsOld} • {user?.state}</p>
       </div>
 
       <div className="dashboard-grid">
@@ -80,6 +80,7 @@ const Dashboard = () => {
           color="#f87171" 
           language={language}
           speak={speak}
+          learnMoreLabel={t.legalGuideReadMore}
         />
         <InfoCard 
           title={t.dashRights} 
@@ -88,6 +89,7 @@ const Dashboard = () => {
           color="#a855f7" 
           language={language}
           speak={speak}
+          learnMoreLabel={t.legalGuideReadMore}
         />
       </div>
 
