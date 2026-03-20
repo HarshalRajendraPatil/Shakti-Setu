@@ -18,6 +18,8 @@ import {
   BookOpen,
   MessageCircle,
   FileText,
+  BarChart3,
+  UsersRound,
 } from "lucide-react";
 import { AppContext } from "../../context/AppContext";
 import { logout } from "../../store/slices/authSlice";
@@ -35,6 +37,8 @@ const ICON_MAP = {
   admin: Settings,
   "lawyer-dashboard": User,
   chat: MessageCircle,
+  feedback: BarChart3,
+  community: UsersRound,
 };
 
 const Header = () => {
@@ -63,6 +67,7 @@ const Header = () => {
       { id: "home", label: t.navHome },
       { id: "resources", label: t.navResources },
       { id: "legal-guide", label: t.navLegalGuide },
+      { id: "community", label: t.navCommunity || "Community" },
     ];
     if (isUser) {
       return [
@@ -72,6 +77,7 @@ const Header = () => {
         { id: "chat", label: t.navChat },
         { id: "lawyers", label: "Find Lawyers" },
         { id: "dashboard", label: "Dashboard" },
+        { id: "feedback", label: t.navFeedback || "Feedback" },
         { id: "assistant", label: t.navAssistant },
         ...(isAdmin ? [{ id: "admin", label: "Admin" }] : []),
       ];
@@ -80,6 +86,7 @@ const Header = () => {
       return [
         ...baseItems,
         { id: "lawyer-dashboard", label: "Profile" },
+        { id: "feedback", label: t.navFeedback || "Feedback" },
         { id: "chat", label: t.navChat },
         { id: "lawyers", label: "Browse Lawyers" },
       ];

@@ -6,7 +6,7 @@ import { getCurrentLawyer, updateProfile, getLawyerStats } from '../../store/sli
 import { getLawyerConsultations } from '../../store/slices/consultationSlice';
 import GlassCard from '../common/GlassCard';
 import ConsultationManagement from './ConsultationManagement';
-import { Star, Briefcase, Users, Clock, TrendingUp, Edit2, Save, X, MessageSquare } from 'lucide-react';
+import { Star, Briefcase, Users, Clock, TrendingUp, Edit2, Save, X, MessageSquare, BarChart3 } from 'lucide-react';
 
 const LawyerProfile = () => {
   const dispatch = useDispatch();
@@ -63,6 +63,24 @@ const LawyerProfile = () => {
       <div style={{ marginBottom: '2rem' }}>
         <h2>Profile</h2>
         <p style={{ color: 'var(--text-muted)' }}>Manage your lawyer profile, stats, and consultation requests</p>
+        <button
+          onClick={() => setPage('feedback')}
+          style={{
+            marginTop: '0.9rem',
+            padding: '8px 14px',
+            borderRadius: '8px',
+            border: '1px solid rgba(59, 130, 246, 0.45)',
+            background: 'rgba(59, 130, 246, 0.16)',
+            color: '#60a5fa',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '8px',
+            fontSize: '0.9rem'
+          }}
+        >
+          <BarChart3 size={16} />
+          Open Feedback Analytics
+        </button>
       </div>
 
       {/* Tab Navigation */}

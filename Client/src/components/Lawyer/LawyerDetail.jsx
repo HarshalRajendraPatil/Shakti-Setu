@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useContext } from 'react';
 import { AppContext } from '../../context/AppContext';
 import { getLawyerById, getUserConsultations } from '../../store/slices/consultationSlice';
-import { reportAPI, authAPI } from '../../services/api';
+import { reportAPI, authAPI, feedbackAPI } from '../../services/api';
 import GlassCard from '../common/GlassCard';
 import ConsultationRequest from '../Consultation/ConsultationRequest';
 import { Star, MapPin, Phone, Mail, Briefcase, Scale, ArrowLeft, Clock, Flag, Bookmark, BookmarkCheck } from 'lucide-react';
@@ -23,6 +23,8 @@ const LawyerDetail = ({ lawyerId }) => {
   const [reportSuccess, setReportSuccess] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
   const [savedToggling, setSavedToggling] = useState(false);
+  const [feedbackSummary, setFeedbackSummary] = useState(null);
+  const [publicFeedback, setPublicFeedback] = useState([]);
 
   // Check if user is trying to consult themselves
   const isSelfConsultation = isLawyerAuthenticated && (lawyer?.id === lawyerId || lawyer?._id === lawyerId);
@@ -38,6 +40,19 @@ const LawyerDetail = ({ lawyerId }) => {
       dispatch(getLawyerById(lawyerId));
     }
   }, [dispatch, lawyerId]);
+
+  useEffect(() => {
+    if (!lawyerId) return;
+    feedbackAPI.getLawyerPublicSummary(lawyerId)
+      .then((res) => {
+        setFeedbackSummary(res.data?.lawyer || null);
+        setPublicFeedback(res.data?.recentFeedback || []);
+      })
+      .catch(() => {
+        setFeedbackSummary(null);
+        setPublicFeedback([]);
+      });
+  }, [lawyerId]);
 
   useEffect(() => {
     if (isAuthenticated && !isLawyerAuthenticated && lawyerId) {
@@ -150,12 +165,12 @@ const LawyerDetail = ({ lawyerId }) => {
                   <Scale size={14} style={{ display: 'inline', marginRight: '4px' }} />
                   Bar No: {lawyerDetail.barNumber}
                 </p>
-                {lawyerDetail.averageRating > 0 && (
+                {(feedbackSummary?.averageRating > 0 || lawyerDetail.averageRating > 0) && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
                     <Star size={18} color="#fbbf24" fill="#fbbf24" />
-                    <span style={{ fontWeight: 'bold' }}>{lawyerDetail.averageRating.toFixed(1)}</span>
+                    <span style={{ fontWeight: 'bold' }}>{(feedbackSummary?.averageRating ?? lawyerDetail.averageRating).toFixed(1)}</span>
                     <span style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-                      ({lawyerDetail.totalRatings} reviews)
+                      ({feedbackSummary?.totalRatings ?? lawyerDetail.totalRatings} reviews)
                     </span>
                   </div>
                 )}
@@ -362,13 +377,15 @@ const LawyerDetail = ({ lawyerId }) => {
             />
           )}
 
-          {reviews && reviews.length > 0 && (
+          {(publicFeedback.length > 0 || (reviews && reviews.length > 0)) && (
             <GlassCard>
-              <h3 style={{ marginBottom: '1rem' }}>Reviews ({reviews.length})</h3>
+              <h3 style={{ marginBottom: '1rem' }}>
+                Reviews ({publicFeedback.length || reviews.length})
+              </h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                {reviews.map((review) => (
+                {(publicFeedback.length ? publicFeedback : reviews).map((review) => (
                   <div
-                    key={review._id}
+                    key={review._id || review.id}
                     style={{
                       padding: '1rem',
                       background: 'rgba(0,0,0,0.2)',
@@ -390,17 +407,17 @@ const LawyerDetail = ({ lawyerId }) => {
                           fontSize: '0.9rem',
                           fontWeight: 'bold'
                         }}>
-                          {review.user?.name?.charAt(0) || 'U'}
+                          {(review.user?.name || review.user || 'U').charAt(0)}
                         </div>
-                        <span>{review.user?.name || 'Anonymous'}</span>
+                        <span>{review.user?.name || review.user || 'Anonymous'}</span>
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                         <Star size={16} color="#fbbf24" fill="#fbbf24" />
                         <span>{review.rating}</span>
                       </div>
                     </div>
-                    {review.review && (
-                      <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>{review.review}</p>
+                    {(review.review || review.comment) && (
+                      <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>{review.review || review.comment}</p>
                     )}
                     <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>
                       {new Date(review.createdAt).toLocaleDateString()}

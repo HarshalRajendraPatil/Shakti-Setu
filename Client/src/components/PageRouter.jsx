@@ -14,6 +14,8 @@ import Resources from './Resources/Resources';
 import LegalGuide from './LegalGuide/LegalGuide';
 import ArticleView from './LegalGuide/ArticleView';
 import Chat from './Chat/Chat';
+import FeedbackCenter from './Feedback/FeedbackCenter';
+import CommunitySupport from './Community/CommunitySupport';
 
 const PageRouter = () => {
   const { page } = useContext(AppContext);
@@ -27,6 +29,10 @@ const PageRouter = () => {
       return <ArticleView />;
     case 'chat':
       return <Chat />;
+    case 'community':
+      return <CommunitySupport />;
+    case 'feedback':
+      return <FeedbackCenter />;
     case 'register':
     case 'lawyer-register':
       return <Register />;

@@ -2,6 +2,8 @@ const Consultation = require('../models/Consultation');
 const Lawyer = require('../models/Lawyer');
 const User = require('../models/User');
 const Message = require('../models/Message');
+const Feedback = require('../models/Feedback');
+const { syncLawyerRatingStats } = require('../utils/feedbackAnalytics');
 
 // Create Consultation Request
 exports.createConsultation = async (req, res) => {
@@ -182,18 +184,32 @@ exports.addRating = async (req, res) => {
     consultation.review = review || '';
     await consultation.save();
 
-    // Update lawyer's average rating
-    const lawyer = await Lawyer.findById(consultation.lawyer);
-    const allRatings = await Consultation.find({
-      lawyer: consultation.lawyer,
-      rating: { $exists: true, $ne: null }
-    });
+    // Mirror consultation rating into the feedback collection for unified analytics.
+    await Feedback.findOneAndUpdate(
+      {
+        consultation: consultation._id,
+        submittedByUser: req.user.id
+      },
+      {
+        $set: {
+          targetType: 'lawyer',
+          lawyer: consultation.lawyer,
+          rating,
+          comment: review || '',
+          categories: ['consultation'],
+          source: 'consultation_rating',
+          status: 'active',
+          metadata: { channel: 'consultation' }
+        },
+        $setOnInsert: {
+          submittedByUser: req.user.id,
+          consultation: consultation._id
+        }
+      },
+      { upsert: true, setDefaultsOnInsert: true }
+    );
 
-    const totalRatings = allRatings.length;
-    const sumRatings = allRatings.reduce((sum, c) => sum + c.rating, 0);
-    lawyer.averageRating = totalRatings > 0 ? sumRatings / totalRatings : 0;
-    lawyer.totalRatings = totalRatings;
-    await lawyer.save();
+    await syncLawyerRatingStats(consultation.lawyer);
 
     res.json({
       success: true,

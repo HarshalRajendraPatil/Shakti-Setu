@@ -177,6 +177,62 @@ export const articlesAPI = {
   deleteArticle: (id) => api.delete(`/articles/${id}`),
 };
 
+// Feedback & Ratings API
+export const feedbackAPI = {
+  createFeedback: (payload) => api.post('/feedback', payload),
+  getMyFeedback: (params = {}) => {
+    const search = new URLSearchParams(params).toString();
+    return api.get(`/feedback/my${search ? `?${search}` : ''}`);
+  },
+  updateMyFeedback: (feedbackId, payload) => api.put(`/feedback/my/${feedbackId}`, payload),
+  deleteMyFeedback: (feedbackId) => api.delete(`/feedback/my/${feedbackId}`),
+  getLawyerPublicSummary: (lawyerId) => api.get(`/feedback/lawyer/${lawyerId}/summary`),
+  getMyLawyerPerformance: (params = {}) => {
+    const search = new URLSearchParams(params).toString();
+    return lawyerApi.get(`/feedback/lawyer/me/performance${search ? `?${search}` : ''}`);
+  },
+  getPlatformAnalytics: (params = {}) => {
+    const search = new URLSearchParams(params).toString();
+    return api.get(`/feedback/analytics/platform${search ? `?${search}` : ''}`);
+  },
+  getLawyerPerformanceAnalytics: (params = {}) => {
+    const search = new URLSearchParams(params).toString();
+    return api.get(`/feedback/analytics/lawyers${search ? `?${search}` : ''}`);
+  },
+  getSatisfactionMetrics: (params = {}) => {
+    const search = new URLSearchParams(params).toString();
+    return api.get(`/feedback/analytics/satisfaction${search ? `?${search}` : ''}`);
+  },
+  generateReport: (payload) => api.post('/feedback/reports/generate', payload),
+  listReports: (params = {}) => {
+    const search = new URLSearchParams(params).toString();
+    return api.get(`/feedback/reports${search ? `?${search}` : ''}`);
+  },
+  getLatestReport: (periodType) => api.get(`/feedback/reports/latest/${periodType}`),
+};
+
+// Community Support API
+export const communityAPI = {
+  listPosts: (params = {}) => {
+    const search = new URLSearchParams(params).toString();
+    return api.get(`/community/posts${search ? `?${search}` : ''}`);
+  },
+  getPostById: (postId, params = {}) => {
+    const search = new URLSearchParams(params).toString();
+    return api.get(`/community/posts/${postId}${search ? `?${search}` : ''}`);
+  },
+  listPostComments: (postId, params = {}) => {
+    const search = new URLSearchParams(params).toString();
+    return api.get(`/community/posts/${postId}/comments${search ? `?${search}` : ''}`);
+  },
+  createPost: (payload) => api.post('/community/posts', payload),
+  deletePost: (postId) => api.delete(`/community/posts/${postId}`),
+  createComment: (postId, payload) => api.post(`/community/posts/${postId}/comments`, payload),
+  deleteComment: (commentId) => api.delete(`/community/comments/${commentId}`),
+  reactToPost: (postId, reactionType) => api.post(`/community/posts/${postId}/reactions`, { reactionType }),
+  reactToComment: (commentId, reactionType) => api.post(`/community/comments/${commentId}/reactions`, { reactionType }),
+};
+
 // Gemini API (keeping existing functions but updating to include links)
 export const fetchGroundedResponse = async (userQuery, user, language) => {
   const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
